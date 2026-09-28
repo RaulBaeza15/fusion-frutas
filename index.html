@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Fusión Frutal - juego neón de fusionar frutas</title>
+  <meta name="description" content="Juego gratis de fusionar frutas con estética neón: deja caer frutas, junta dos iguales y llega a la sandía. Sin registros ni descargas, en el navegador.">
+  <meta name="application-name" content="Fusión Frutal">
+  <meta name="theme-color" content="#05060a">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%8D%89%3C/text%3E%3C/svg%3E">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Fusión Frutal">
+  <meta property="og:title" content="Fusión Frutal - juego neón de fusionar frutas">
+  <meta property="og:description" content="Deja caer frutas, fusiona dos iguales y llega a la sandía. Gratis, en el navegador.">
+  <meta property="og:url" content="https://raulbaeza15.github.io/fusion-frutas/">
+  <meta property="og:image" content="https://raulbaeza15.github.io/fusion-frutas/preview.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "VideoGame",
+    "name": "Fusión Frutal",
+    "url": "https://raulbaeza15.github.io/fusion-frutas/",
+    "genre": "Puzzle",
+    "gamePlatform": "Web browser",
+    "applicationCategory": "Game",
+    "operatingSystem": "Any",
+    "inLanguage": ["es", "en", "fr", "de", "it", "pt", "tr"],
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+    "author": { "@type": "Person", "name": "Raúl Baeza Osuna" }
+  }
+  </script>
+</head>
+<body>
+  <main class="wrap">
+    <header class="hud">
+      <h1 class="logo"><a href="./" aria-label="Fusión Frutal">🍉 <span data-i18n="title">Fusión Frutal</span></a></h1>
+      <select id="lang" class="lang" aria-label="Idioma / Language"></select>
+    </header>
+
+    <p class="tagline" data-i18n="tagline">Deja caer frutas, fusiona dos iguales y llega a la sandía.</p>
+
+    <section class="panel">
+      <div class="stat">
+        <span class="label" data-i18n="score">Puntos</span>
+        <span id="score" class="value glow-cyan">0</span>
+      </div>
+      <div class="stat">
+        <span class="label" data-i18n="best">Récord</span>
+        <span id="best" class="value glow-pink">0</span>
+      </div>
+      <div class="stat">
+        <span class="label" data-i18n="next">Siguiente</span>
+        <span id="next" class="value next-fruit">🍒</span>
+      </div>
+      <button id="restart" class="btn" data-i18n="restart">Reiniciar</button>
+    </section>
+
+    <div class="board-box">
+      <canvas id="board" width="420" height="640"></canvas>
+      <div id="flash" class="flash" aria-live="polite"></div>
+      <div id="overlay" class="overlay">
+        <div class="overlay-card">
+          <h2 data-i18n="gameover">Fin de la partida</h2>
+          <p id="finalscore"></p>
+          <button id="playagain" class="btn big" data-i18n="playagain">Jugar otra vez</button>
+        </div>
+      </div>
+    </div>
+
+    <p class="howto" data-i18n="howto">Mueve el dedo o el ratón para apuntar y suelta para dejar caer. Dos frutas iguales se fusionan.</p>
+
+    <footer class="credit">
+      <span data-i18n="credit">Hecho por</span> <a href="https://r15studios.github.io/" target="_blank" rel="noopener">R15 Studios</a>
+    </footer>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.20.0/matter.min.js"
+          integrity="sha512-6+7rTBmR6pRFe9fa0vCFjFaHZj/XYa7774bEBzRtxgdpIJOS++R3cKd6Prg/eJmxtsJotd8KAg4g57uuVQsZKA=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"
+          onerror="var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/matter-js@0.20.0/build/matter.min.js';document.head.appendChild(s);"></script>
+  <script src="js/themes/frutas.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
