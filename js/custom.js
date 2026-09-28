@@ -69,7 +69,7 @@
       if (bad) document.getElementById('theme-error').textContent = t(11);
     }
     document.getElementById('lang').addEventListener('change', function () { setTimeout(translate, 0); });
-    translate();
+    setTimeout(translate, 0);
     document.getElementById('generate').addEventListener('click', function () {
       var items = area.value.split(/[\n,]+/).map(function (s) { return s.trim(); }).filter(Boolean);
       var issue = valid(items);
