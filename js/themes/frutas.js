@@ -16,16 +16,16 @@ window.FUSION_THEME = {
   scaleBase: 420,
   maxDropLevel: 4,
   levels: [
-    { emoji: '\u{1F352}', radius: 16,  color: '#ff4d6d', points: 1  },  // cereza
-    { emoji: '\u{1F353}', radius: 24,  color: '#ff2e88', points: 3  },  // fresa
-    { emoji: '\u{1F347}', radius: 34,  color: '#b26bff', points: 6  },  // uvas
-    { emoji: '\u{1F34A}', radius: 44,  color: '#ff9f1c', points: 10 },  // mandarina
-    { emoji: '\u{1F34B}', radius: 54,  color: '#ffe600', points: 15 },  // limón
-    { emoji: '\u{1F34E}', radius: 64,  color: '#ff3131', points: 21 },  // manzana
-    { emoji: '\u{1F350}', radius: 76,  color: '#8dff57', points: 28 },  // pera
-    { emoji: '\u{1F351}', radius: 88,  color: '#ff9e7d', points: 36 },  // melocotón
-    { emoji: '\u{1F34D}', radius: 102, color: '#ffd23f', points: 45 },  // piña
-    { emoji: '\u{1F348}', radius: 118, color: '#7dffce', points: 55 },  // melón
-    { emoji: '\u{1F349}', radius: 136, color: '#00ff87', points: 66 }   // sandía
+    { emoji: '\u{1F352}', image: 'assets/frutas/1f352.png', radius: 16,  color: '#ff4d6d', points: 1  },  // cereza
+    { emoji: '\u{1F353}', image: 'assets/frutas/1f353.png', radius: 24,  color: '#ff2e88', points: 3  },  // fresa
+    { emoji: '\u{1F347}', image: 'assets/frutas/1f347.png', radius: 34,  color: '#b26bff', points: 6  },  // uvas
+    { emoji: '\u{1F34A}', image: 'assets/frutas/1f34a.png', radius: 44,  color: '#ff9f1c', points: 10 },  // mandarina
+    { emoji: '\u{1F34B}', image: 'assets/frutas/1f34b.png', radius: 54,  color: '#ffe600', points: 15 },  // limón
+    { emoji: '\u{1F34E}', image: 'assets/frutas/1f34e.png', radius: 64,  color: '#ff3131', points: 21 },  // manzana
+    { emoji: '\u{1F350}', image: 'assets/frutas/1f350.png', radius: 76,  color: '#8dff57', points: 28 },  // pera
+    { emoji: '\u{1F351}', image: 'assets/frutas/1f351.png', radius: 88,  color: '#ff9e7d', points: 36 },  // melocotón
+    { emoji: '\u{1F34D}', image: 'assets/frutas/1f34d.png', radius: 102, color: '#ffd23f', points: 45 },  // piña
+    { emoji: '\u{1F348}', image: 'assets/frutas/1f348.png', radius: 118, color: '#7dffce', points: 55 },  // melón
+    { emoji: '\u{1F349}', image: 'assets/frutas/1f349.png', radius: 136, color: '#00ff87', points: 66 }   // sandía
   ]
 };

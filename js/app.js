@@ -152,12 +152,22 @@
         if (s > best) { best = s; bestEl.textContent = fmt(best); }
       },
       onNext: function (level) {
-        nextEl.textContent = window.FUSION_THEME.levels[level].emoji;
+        var def = window.FUSION_THEME.levels[level];
+        nextEl.textContent = '';
+        if (def.image || def.emoji) {
+          var image = document.createElement('img');
+          image.src = def.image || ('https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/' +
+            Array.from(def.emoji).filter(function(c) { return c !== '\ufe0f'; }).map(function(c) { return c.codePointAt(0).toString(16); }).join('-') + '.png');
+          image.alt = def.emoji || '';
+          image.width = image.height = 32;
+          nextEl.appendChild(image);
+        }
       },
       onMerge: function (level) {
         if (level === window.FUSION_THEME.levels.length - 1) showFlash(window.FUSION_CUSTOM.enabled ? window.FUSION_CUSTOM.text() : t('watermelon'));
       },
       onMaxMerge: function () { showFlash(window.FUSION_CUSTOM.enabled ? window.FUSION_CUSTOM.text() : t('watermelon')); },
+      onImageError: function () { var warning=document.getElementById('image-error'); warning.hidden=false; warning.textContent=window.FUSION_CUSTOM.imageError(); },
       onGameOver: function (s) {
         finalEl.textContent = t('finalscore').replace('{n}', fmt(s));
         overlay.classList.add('show');

@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://raulbaeza15.github.io/fusion-frutas/">
   <meta property="og:image" content="https://raulbaeza15.github.io/fusion-frutas/preview.png">
   <meta name="twitter:card" content="summary_large_image">
-  <link rel="stylesheet" href="css/style.css?v=2">
+  <link rel="stylesheet" href="css/style.css?v=3">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -61,6 +61,14 @@
       <summary data-custom="customTitle">Crea tu tema</summary>
       <div class="creator-body">
         <p data-custom="customIntro">Pon de 3 a 11 emojis, uno por línea, de menor a mayor.</p>
+        <div class="mode-switch"><label><input type="radio" name="theme-mode" value="emoji" checked> <span data-custom="customModeEmoji">Emojis</span></label><label><input type="radio" name="theme-mode" value="png"> <span data-custom="customModePng">PNG</span></label></div>
+        <div id="png-tools" hidden>
+          <label for="png-files" data-custom="customUpload">Sube PNG en orden</label>
+          <input id="png-files" type="file" accept="image/png" multiple>
+          <label for="png-urls" data-custom="customUrls">O pega URL públicas de PNG (una por línea)</label>
+          <textarea id="png-urls" rows="4" spellcheck="false" placeholder="https://ejemplo.com/imagen.png"></textarea>
+          <p data-custom="customLimit">3 a 11 PNG. Los PNG pequeños se guardan dentro del enlace (máximo 18.000 caracteres); las URL externas necesitan CORS. No uses imágenes privadas.</p>
+        </div>
         <textarea id="emoji-list" rows="5" aria-label="Emojis" spellcheck="false" placeholder="🐣&#10;🐤&#10;🐔&#10;🦅&#10;🐉"></textarea>
         <button id="generate" class="btn" type="button" data-custom="customGenerate">Generar enlace</button>
         <p id="create-status" role="status" aria-live="polite"></p>
@@ -75,6 +83,7 @@
 
     <div class="board-box">
       <canvas id="board" width="420" height="640"></canvas>
+      <p id="image-error" class="image-error" role="alert" hidden></p>
       <div id="flash" class="flash" aria-live="polite"></div>
       <div id="overlay" class="overlay">
         <div class="overlay-card">
@@ -97,8 +106,10 @@
           crossorigin="anonymous" referrerpolicy="no-referrer"
           onerror="var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/matter-js@0.20.0/build/matter.min.js';document.head.appendChild(s);"></script>
   <script src="js/themes/frutas.js"></script>
-  <script src="js/custom.js?v=2"></script>
-  <script src="js/engine.js?v=2"></script>
-  <script src="js/app.js?v=2"></script>
+  <script src="js/custom.js?v=3"></script>
+  <script src="js/vendor/decomp.min.js?v=1"></script>
+  <script src="js/silhouette.js?v=1"></script>
+  <script src="js/engine.js?v=3"></script>
+  <script src="js/app.js?v=3"></script>
 </body>
 </html>

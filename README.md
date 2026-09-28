@@ -82,3 +82,22 @@ Reglas del motor que conviene saber:
 ## Créditos
 
 Hecho por [R15 Studios](https://r15studios.github.io/).
+
+## PNG y hitboxes
+
+Las frutas del tema base usan PNG de Twemoji 14.0.2 guardados en
+`assets/frutas/`, no recursos externos. Las piezas se pintan desde PNG con
+transparencia. `js/silhouette.js` lee el canal alfa, obtiene el contorno exterior
+más grande y `poly-decomp` divide sus concavidades en cuerpos convexos para
+Matter.js. Los detalles sueltos muy pequeños quedan visibles pero no tienen
+hitbox propia; una imagen externa sin CORS no puede leerse para trazar su
+colisión. El juego debe usarse con PNG públicos que permitan CORS o con archivos
+subidos al configurador. Los archivos PNG pequeños se embeben en el enlace:
+una URL mayor de 18.000 caracteres se rechaza en vez de crear un enlace roto.
+Una URL externa puede cambiar o dejar de funcionar, y en ese caso no garantiza
+un tema reproducible. Nunca pongas imágenes privadas en un enlace compartible.
+
+El generador permite alternar entre emojis (atajo con PNG Twemoji) e imágenes
+PNG propias. Para las imágenes propias, sube 3 a 11 PNG en orden o pega URL
+públicas HTTPS, una por línea. Las URL de PNG deben aceptar CORS para que
+su hitbox siga el canal alfa.

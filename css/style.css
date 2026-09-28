@@ -202,3 +202,14 @@ body {
 #created-link[hidden] { display: none; }
 #play-custom { text-align: center; text-decoration: none; }
 #create-status:not(:empty), #theme-error:not(:empty) { color: #ffd23f; font-size: .8rem; }
+
+.mode-switch { display:flex; gap:16px; padding:5px 0; }
+.mode-switch label { display:flex; gap:6px; align-items:center; cursor:pointer; }
+#png-tools { display:flex; flex-direction:column; gap:8px; }
+#png-tools[hidden], #emoji-list[hidden] { display:none; }
+#png-tools label { font-size:.82rem; color:#e8f6ff; }
+#png-files { font-size:.8rem; max-width:100%; }
+#png-urls { font-size:.78rem; }
+
+.image-error { position:absolute; top:20%; left:5%; width:90%; background:#0b0e18; border:1px solid #ff2e63; border-radius:10px; color:#fff; padding:14px; text-align:center; }
+.image-error[hidden] {display:none;}

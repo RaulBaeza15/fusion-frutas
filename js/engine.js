@@ -34,28 +34,37 @@ window.FruitFusion = (function () {
   var canDrop = true, gameOver = false, aiming = false;
   var overSince = null;
   var cb = {};
-  var outlines = {}; // convex sprite contours for approximate collision
-  var emojiSprites = {}; // Twemoji SVG sprite per emoji; native font fallback
-  var images = {};          // imágenes precargadas del tema (opcional)
+  var silhouettes = {}, images = {}, imageErrors = {};
   var raf = null, lastTime = 0, accumulator = 0;
 
   function radiusOf(level) { return theme.levels[level].radius * scale; }
   function randomDrop() { return 0; }
-
+  function sourceOf(def) {
+    if (def.image) return def.image;
+    if (!def.emoji) return null;
+    var chars = Array.from(def.emoji);
+    if (chars.indexOf('\u20e3') < 0) chars = chars.filter(function (c) { return c !== '\ufe0f'; });
+    return 'https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/' +
+      chars.map(function(c) { return c.codePointAt(0).toString(16); }).join('-') + '.png';
+  }
   function makeFruit(level, x, y) {
-    var r = radiusOf(level);
-    var options = {
-      label: 'fruit',
-      restitution: 0.18,
-      friction: 0.12,
-      frictionStatic: 0.4,
-      density: 0.0018,
-      slop: 0.02
-    };
-    var outline = outlines[theme.levels[level].emoji];
-    var body = outline ? Matter.Bodies.fromVertices(x, y, outline.map(function (p) {
-      return { x: p.x * r * 1.82, y: p.y * r * 1.82 };
-    }), options, true) : Matter.Bodies.circle(x, y, r * 0.86, options);
+    var def = theme.levels[level], r = radiusOf(level), source = sourceOf(def);
+    var shape = silhouettes[source];
+    var opts = { label: 'fruit', restitution: 0.12, friction: 0.15,
+      frictionStatic: 0.5, density: 0.0018, slop: 0.01 };
+    var body;
+    if (shape) {
+      var vertices = shape.polygons.map(function (polygon) { return polygon.map(function (p) {
+        return {x:p.x * r * 1.84, y:p.y * r * 1.84};
+      }); });
+      body = Matter.Bodies.fromVertices(x, y, vertices, opts, false, 0.01, 4, 0.01);
+      if (body) {
+        // Matter recentres composite parts at their centre of mass. Keep image and
+        // collision silhouette aligned using the alpha polygon's original centre.
+        body.plugin.spriteOffset = {x: -shape.center.x * r * 1.84, y: -shape.center.y * r * 1.84};
+      }
+    }
+    if (!body) throw Error('PNG hitbox not ready');
     body.plugin.fruitLevel = level;
     body.plugin.born = performance.now();
     return body;
@@ -75,7 +84,9 @@ window.FruitFusion = (function () {
     var pairs = ev.pairs;
     for (var i = 0; i < pairs.length; i++) {
       var a = pairs[i].bodyA, b = pairs[i].bodyB;
-      if (a.label !== 'fruit' || b.label !== 'fruit') continue;
+      if (a.parent) a = a.parent;
+      if (b.parent) b = b.parent;
+      if (a === b || a.label !== 'fruit' || b.label !== 'fruit') continue;
       var la = a.plugin.fruitLevel, lb = b.plugin.fruitLevel;
       if (la !== lb) continue;
       if (a.plugin.merging || b.plugin.merging) continue;
@@ -120,6 +131,12 @@ window.FruitFusion = (function () {
 
   function drop() {
     if (!canDrop || gameOver) return;
+    if (!silhouettes[sourceOf(theme.levels[currentLevel])]) {
+      if (imageErrors[sourceOf(theme.levels[currentLevel])]) {
+        if (cb.onImageError) cb.onImageError();
+      }
+      return;
+    }
     canDrop = false;
     var r = radiusOf(currentLevel);
     var x = Math.max(r + 4, Math.min(W - r - 4, dropX));
@@ -175,29 +192,24 @@ window.FruitFusion = (function () {
     return 'rgba(' + (n >> 16 & 255) + ',' + (n >> 8 & 255) + ',' + (n & 255) + ',' + a + ')';
   }
 
-  function drawFruit(body) {
-    var level = body.plugin.fruitLevel;
-    var def = theme.levels[level];
-    var r = radiusOf(level);
-    var x = body.position.x, y = body.position.y;
-    // Sprite silhouette replaces the generic circle; a subtle sprite halo remains.
-
-    var img = (def.image && images[def.image] && images[def.image].complete && images[def.image].naturalWidth) ? images[def.image] : emojiSprites[def.emoji];
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(body.angle);
+  function drawImagePiece(x, y, r, def, angle, opacity) {
+    var src = sourceOf(def), img = images[src];
+    ctx.save(); ctx.translate(x,y); ctx.rotate(angle); ctx.globalAlpha = opacity;
+    ctx.shadowColor = def.color; ctx.shadowBlur = 11;
     if (img && img.complete && img.naturalWidth) {
-      ctx.shadowColor = def.color; ctx.shadowBlur = 12;
       ctx.drawImage(img, -r * 0.92, -r * 0.92, r * 1.84, r * 1.84);
-    } else {
-      ctx.font = (r * 1.25) + 'px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.shadowColor = 'transparent';
-      ctx.shadowBlur = 0;
-      ctx.fillText(def.emoji, 0, r * 0.06);
+    } else if (def.emoji) {
+      ctx.font = (r * 1.25) + 'px "Apple Color Emoji","Segoe UI Emoji",sans-serif';
+      ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(def.emoji, 0, r*0.06);
     }
     ctx.restore();
+  }
+  function drawFruit(body) {
+    var level = body.plugin.fruitLevel, def = theme.levels[level];
+    var offset = body.plugin.spriteOffset || {x:0,y:0};
+    var c=Math.cos(body.angle), si=Math.sin(body.angle);
+    drawImagePiece(body.position.x + offset.x*c-offset.y*si, body.position.y + offset.x*si+offset.y*c,
+      radiusOf(level), def, body.angle, 1);
   }
 
   function drawBoard() {
@@ -241,39 +253,12 @@ window.FruitFusion = (function () {
 
   function drawGhost() {
     if (gameOver) return;
-    var def = theme.levels[currentLevel];
-    var r = radiusOf(currentLevel);
+    var def = theme.levels[currentLevel], r = radiusOf(currentLevel);
     var x = Math.max(r + 4, Math.min(W - r - 4, dropX));
-
-    // guía vertical
-    ctx.save();
-    ctx.strokeStyle = hexToRgba(def.color, 0.35);
-    ctx.setLineDash([4, 8]);
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(x, DROP_Y + r);
-    ctx.lineTo(x, H - 6);
-    ctx.stroke();
-    ctx.restore();
-
-    // pieza fantasma
-    ctx.save();
-    ctx.globalAlpha = canDrop ? 0.85 : 0.3;
-    // The aim preview uses the emoji silhouette, not a circle.
-    ctx.font = (r * 1.25) + 'px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.shadowColor = def.color;
-    ctx.shadowBlur = 16;
-    var sprite = emojiSprites[def.emoji];
-    if (sprite && sprite.complete && sprite.naturalWidth) {
-      ctx.shadowColor = def.color; ctx.shadowBlur = 12;
-      ctx.drawImage(sprite, x - r * 0.92, DROP_Y - r * 0.92, r * 1.84, r * 1.84);
-    } else {
-      ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
-      ctx.fillText(def.emoji, x, DROP_Y + r * 0.06);
-    }
-    ctx.restore();
+    ctx.save(); ctx.strokeStyle=hexToRgba(def.color,0.35);
+    ctx.setLineDash([4,8]); ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(x,DROP_Y+r); ctx.lineTo(x,H-6); ctx.stroke(); ctx.restore();
+    drawImagePiece(x,DROP_Y,r,def,0,canDrop?0.85:0.3);
   }
 
   function frame(now) {
@@ -284,7 +269,7 @@ window.FruitFusion = (function () {
     lastTime = now;
     var steps = 0;
     while (accumulator >= 16.667 && steps < 30) {
-      Matter.Engine.update(engine, 16.667);
+      Matter.Engine.update(engine, 16.666);
       accumulator -= 16.667;
       steps++;
     }
@@ -326,42 +311,19 @@ window.FruitFusion = (function () {
     canvas.addEventListener('pointercancel', function () { aiming = false; });
   }
 
-  function emojiFile(emoji) {
-    // Twemoji accepts codepoints with FE0F omitted except keycap sequences.
-    var chars = Array.from(emoji);
-    if (chars.indexOf('\u20e3') < 0) chars = chars.filter(function (c) { return c !== '\ufe0f'; });
-    return chars.map(function (c) { return c.codePointAt(0).toString(16); }).join('-');
-  }
-
-  function traceOutline(img, emoji) {
-    try {
-      var c = document.createElement('canvas'); c.width = c.height = 80;
-      var cx = c.getContext('2d', { willReadFrequently: true });
-      cx.drawImage(img, 0, 0, 80, 80);
-      var data = cx.getImageData(0, 0, 80, 80).data;
-      var points = [];
-      for (var y = 0; y < 80; y += 3) for (var x = 0; x < 80; x += 3) {
-        if (data[(y * 80 + x) * 4 + 3] > 80) points.push({ x: (x - 40) / 40, y: (y - 40) / 40 });
-      }
-      if (points.length >= 12) outlines[emoji] = Matter.Vertices.hull(points);
-    } catch (e) { /* Canvas tainted or unavailable: circle physics fallback. */ }
-  }
-
   function preloadImages() {
-    theme.levels.forEach(function (l) {
-      if (!l.emoji || emojiSprites[l.emoji]) return;
+    theme.levels.forEach(function (def) {
+      var src = sourceOf(def);
+      if (!src || images[src]) return;
       var img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = function () { traceOutline(img, l.emoji); };
-      img.src = 'https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/' + emojiFile(l.emoji) + '.svg';
-      emojiSprites[l.emoji] = img;
-    });
-    theme.levels.forEach(function (l) {
-      if (l.image) {
-        var img = new Image();
-        img.src = l.image;
-        images[l.image] = img;
-      }
+      if (!src.startsWith('data:')) img.crossOrigin = 'anonymous';
+      img.onload = function () {
+        try { silhouettes[src] = FusionSilhouette.trace(img); }
+        catch (e) { imageErrors[src]=true; console.warn('PNG alpha contour unavailable:', src.slice(0,120), e.message); if(cb.onImageError) cb.onImageError(); }
+      };
+      img.onerror = function () { imageErrors[src]=true; if(cb.onImageError) cb.onImageError(); };
+      img.src = src;
+      images[src] = img;
     });
   }
 
@@ -389,6 +351,7 @@ window.FruitFusion = (function () {
     if (cb.onNext) cb.onNext(nextLevel);
     if (cb.onScore) cb.onScore(0);
 
+    Matter.Common.setDecomp(window.decomp);
     preloadImages();
     bindInput();
     lastTime = performance.now();
