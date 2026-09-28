@@ -24,6 +24,20 @@ js/themes/frutas.js   tema: la progresión de piezas
 404.html              404 personalizado
 ```
 
+## Crea y comparte un tema sin tocar código
+
+Abre el panel **Crea tu tema** en la página principal, escribe de 3 a 11 emojis
+(uno por línea, de menor a mayor), pulsa **Generar enlace** y copia el enlace.
+Quien lo abra jugará con esa secuencia. El enlace contiene solo los emojis,
+sin cuentas ni servidor; los tamaños, colores y puntos se calculan al abrirlo.
+Cada tema guarda su propio récord en ese navegador. Un enlace sin parámetro
+mantiene el tema de frutas. No introduzcas datos privados en el enlace.
+
+El render de emojis usa sprites Twemoji desde jsDelivr para que se vean
+sobre el canvas en iOS, con fuente emoji nativa si el recurso no carga.
+Los emojis muy recientes que aún no estén en Twemoji pueden recurrir al
+render nativo del dispositivo.
+
 ## Reutilizar la mecánica con otro tema
 
 El motor (`js/engine.js`) no sabe nada de frutas: lee `window.FUSION_THEME`.
