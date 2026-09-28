@@ -33,8 +33,10 @@ sin cuentas ni servidor; los tamaños, colores y puntos se calculan al abrirlo.
 Cada tema guarda su propio récord en ese navegador. Un enlace sin parámetro
 mantiene el tema de frutas. No introduzcas datos privados en el enlace.
 
-El render de emojis usa sprites Twemoji desde jsDelivr para que se vean
+El render de emojis usa sprites Twemoji desde cdnjs para que se vean
 sobre el canvas en iOS, con fuente emoji nativa si el recurso no carga.
+La colisión aproxima la silueta visible del sprite con una envolvente convexa;
+la figura no se pinta dentro de una esfera genérica.
 Los emojis muy recientes que aún no estén en Twemoji pueden recurrir al
 render nativo del dispositivo.
 
@@ -73,7 +75,7 @@ Opciones de cada nivel:
 
 Reglas del motor que conviene saber:
 
-- Las piezas que caen se eligen al azar entre los niveles `0..maxDropLevel`.
+- Solo cae la pieza más pequeña (nivel 0); el resto aparece mediante fusiones.
 - Al fusionar dos piezas del nivel máximo, desaparecen y dan el doble de puntos.
 - La partida acaba cuando una pieza quieta pasa ~1,6 s por encima de la línea.
 
