@@ -1,1 +1,191 @@
+/* Fusión Frutal - neón sobre negro */
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
+:root {
+  --bg: #05060a;
+  --cyan: #00f5ff;
+  --pink: #ff2e63;
+  --text: #e8f6ff;
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  min-height: 100%;
+}
+
+body {
+  background-image:
+    radial-gradient(ellipse at 50% 120%, rgba(0, 245, 255, 0.08), transparent 60%),
+    radial-gradient(ellipse at 85% -10%, rgba(255, 46, 99, 0.07), transparent 55%);
+  background-attachment: fixed;
+}
+
+.wrap {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 12px 12px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: stretch;
+}
+
+/* cabecera */
+.hud {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo { font-size: 1.35rem; font-weight: 800; letter-spacing: 0.5px; }
+.logo a {
+  color: var(--text);
+  text-decoration: none;
+  text-shadow: 0 0 12px rgba(0, 245, 255, 0.8), 0 0 30px rgba(0, 245, 255, 0.35);
+}
+
+.lang {
+  background: #0b0e18;
+  color: var(--text);
+  border: 1px solid rgba(0, 245, 255, 0.4);
+  border-radius: 8px;
+  padding: 5px 8px;
+  font-size: 0.8rem;
+  box-shadow: 0 0 8px rgba(0, 245, 255, 0.25);
+}
+
+.tagline {
+  text-align: center;
+  font-size: 0.85rem;
+  color: rgba(232, 246, 255, 0.75);
+}
+
+/* marcador */
+.panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: rgba(11, 14, 24, 0.85);
+  border: 1px solid rgba(0, 245, 255, 0.25);
+  border-radius: 12px;
+  padding: 8px 12px;
+  box-shadow: 0 0 14px rgba(0, 245, 255, 0.12) inset, 0 0 18px rgba(0, 0, 0, 0.6);
+}
+
+.stat { display: flex; flex-direction: column; align-items: center; min-width: 56px; }
+.label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: rgba(232, 246, 255, 0.55); }
+.value { font-size: 1.15rem; font-weight: 800; }
+
+.glow-cyan { color: var(--cyan); text-shadow: 0 0 10px rgba(0, 245, 255, 0.9); }
+.glow-pink { color: var(--pink); text-shadow: 0 0 10px rgba(255, 46, 99, 0.9); }
+.next-fruit { font-size: 1.5rem; line-height: 1.2; filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.45)); }
+
+.btn {
+  background: transparent;
+  color: var(--cyan);
+  border: 1px solid var(--cyan);
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-shadow: 0 0 8px rgba(0, 245, 255, 0.7);
+  box-shadow: 0 0 10px rgba(0, 245, 255, 0.3), 0 0 10px rgba(0, 245, 255, 0.15) inset;
+  transition: transform 0.08s ease, box-shadow 0.15s ease;
+}
+.btn:hover { box-shadow: 0 0 18px rgba(0, 245, 255, 0.55), 0 0 14px rgba(0, 245, 255, 0.25) inset; }
+.btn:active { transform: scale(0.96); }
+.btn.big { font-size: 1.05rem; padding: 12px 22px; }
+
+/* tablero */
+.board-box {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 0 24px rgba(0, 245, 255, 0.18), 0 0 60px rgba(255, 46, 99, 0.08);
+}
+
+#board {
+  display: block;
+  width: 100%;
+  height: auto;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+}
+
+/* aviso de sandía */
+.flash {
+  position: absolute;
+  top: 38%;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 2.2rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: #00ff87;
+  text-shadow: 0 0 18px rgba(0, 255, 135, 0.95), 0 0 50px rgba(0, 255, 135, 0.5);
+  opacity: 0;
+  transform: scale(0.7);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  pointer-events: none;
+}
+.flash.show { opacity: 1; transform: scale(1); }
+
+/* fin de partida */
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(5, 6, 10, 0.82);
+  backdrop-filter: blur(3px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.overlay.show { opacity: 1; pointer-events: auto; }
+
+.overlay-card {
+  text-align: center;
+  padding: 28px 34px;
+  border: 1px solid var(--pink);
+  border-radius: 16px;
+  background: #0b0e18;
+  box-shadow: 0 0 30px rgba(255, 46, 99, 0.45);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.overlay-card h2 {
+  color: var(--pink);
+  text-shadow: 0 0 14px rgba(255, 46, 99, 0.9);
+  letter-spacing: 1px;
+}
+.overlay-card p { color: rgba(232, 246, 255, 0.85); }
+
+.howto {
+  text-align: center;
+  font-size: 0.78rem;
+  color: rgba(232, 246, 255, 0.55);
+}
+
+.credit {
+  text-align: center;
+  font-size: 0.75rem;
+  color: rgba(232, 246, 255, 0.45);
+  padding-top: 4px;
+}
+.credit a { color: var(--cyan); text-decoration: none; text-shadow: 0 0 8px rgba(0, 245, 255, 0.5); }
+
+@media (max-height: 700px) {
+  .tagline, .howto { display: none; }
+}
