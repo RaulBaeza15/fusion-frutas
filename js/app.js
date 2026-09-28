@@ -155,9 +155,9 @@
         nextEl.textContent = window.FUSION_THEME.levels[level].emoji;
       },
       onMerge: function (level) {
-        if (level === window.FUSION_THEME.levels.length - 1) showFlash(t('watermelon'));
+        if (level === window.FUSION_THEME.levels.length - 1) showFlash(window.FUSION_CUSTOM.enabled ? window.FUSION_CUSTOM.text() : t('watermelon'));
       },
-      onMaxMerge: function () { showFlash(t('watermelon')); },
+      onMaxMerge: function () { showFlash(window.FUSION_CUSTOM.enabled ? window.FUSION_CUSTOM.text() : t('watermelon')); },
       onGameOver: function (s) {
         finalEl.textContent = t('finalscore').replace('{n}', fmt(s));
         overlay.classList.add('show');
