@@ -34,6 +34,7 @@ window.FruitFusion = (function () {
   var canDrop = true, gameOver = false, aiming = false;
   var overSince = null;
   var cb = {};
+  var emojiSprites = {}; // Twemoji SVG sprite per emoji; native font fallback
   var images = {};          // imágenes precargadas del tema (opcional)
   var raf = null, lastTime = 0;
 
@@ -175,7 +176,7 @@ window.FruitFusion = (function () {
     var r = radiusOf(level);
     var x = body.position.x, y = body.position.y;
     drawNeonCircle(x, y, r, def.color, 0.16);
-    var img = def.image && images[def.image];
+    var img = (def.image && images[def.image] && images[def.image].complete && images[def.image].naturalWidth) ? images[def.image] : emojiSprites[def.emoji];
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(body.angle);
@@ -185,8 +186,8 @@ window.FruitFusion = (function () {
       ctx.font = (r * 1.25) + 'px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.shadowColor = def.color;
-      ctx.shadowBlur = 18;
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
       ctx.fillText(def.emoji, 0, r * 0.06);
     }
     ctx.restore();
@@ -257,7 +258,14 @@ window.FruitFusion = (function () {
     ctx.textBaseline = 'middle';
     ctx.shadowColor = def.color;
     ctx.shadowBlur = 16;
-    ctx.fillText(def.emoji, x, DROP_Y + r * 0.06);
+    var sprite = emojiSprites[def.emoji];
+    if (sprite && sprite.complete && sprite.naturalWidth) {
+      ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
+      ctx.drawImage(sprite, x - r * 0.92, DROP_Y - r * 0.92, r * 1.84, r * 1.84);
+    } else {
+      ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
+      ctx.fillText(def.emoji, x, DROP_Y + r * 0.06);
+    }
     ctx.restore();
   }
 
@@ -303,7 +311,20 @@ window.FruitFusion = (function () {
     canvas.addEventListener('pointercancel', function () { aiming = false; });
   }
 
+  function emojiFile(emoji) {
+    // Twemoji accepts codepoints with FE0F omitted except keycap sequences.
+    var chars = Array.from(emoji);
+    if (chars.indexOf('\u20e3') < 0) chars = chars.filter(function (c) { return c !== '\ufe0f'; });
+    return chars.map(function (c) { return c.codePointAt(0).toString(16); }).join('-');
+  }
+
   function preloadImages() {
+    theme.levels.forEach(function (l) {
+      if (!l.emoji || emojiSprites[l.emoji]) return;
+      var img = new Image();
+      img.src = 'https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/' + emojiFile(l.emoji) + '.svg';
+      emojiSprites[l.emoji] = img;
+    });
     theme.levels.forEach(function (l) {
       if (l.image) {
         var img = new Image();
