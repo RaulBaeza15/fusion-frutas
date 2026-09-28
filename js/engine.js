@@ -37,7 +37,7 @@ window.FruitFusion = (function () {
   var outlines = {}; // convex sprite contours for approximate collision
   var emojiSprites = {}; // Twemoji SVG sprite per emoji; native font fallback
   var images = {};          // imágenes precargadas del tema (opcional)
-  var raf = null, lastTime = 0;
+  var raf = null, lastTime = 0, accumulator = 0;
 
   function radiusOf(level) { return theme.levels[level].radius * scale; }
   function randomDrop() { return 0; }
@@ -278,8 +278,16 @@ window.FruitFusion = (function () {
 
   function frame(now) {
     raf = requestAnimationFrame(frame);
-    Matter.Engine.update(engine, Math.min(now - lastTime, 33));
+    // Browser automation and background tabs can throttle rAF to ~1 Hz.
+    // Fixed physics steps make gravity and collisions progress at the right pace.
+    accumulator = Math.min(accumulator + Math.max(0, now - lastTime), 500);
     lastTime = now;
+    var steps = 0;
+    while (accumulator >= 16.667 && steps < 30) {
+      Matter.Engine.update(engine, 16.667);
+      accumulator -= 16.667;
+      steps++;
+    }
     checkGameOver(now);
 
     ctx.setTransform(canvas.width / W, 0, 0, canvas.height / H, 0, 0);
@@ -384,6 +392,7 @@ window.FruitFusion = (function () {
     preloadImages();
     bindInput();
     lastTime = performance.now();
+    accumulator = 0;
     raf = requestAnimationFrame(frame);
     return { getScore: function () { return score; }, getBest: function () { return best; } };
   }
