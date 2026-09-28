@@ -34,23 +34,28 @@ window.FruitFusion = (function () {
   var canDrop = true, gameOver = false, aiming = false;
   var overSince = null;
   var cb = {};
+  var outlines = {}; // convex sprite contours for approximate collision
   var emojiSprites = {}; // Twemoji SVG sprite per emoji; native font fallback
   var images = {};          // imágenes precargadas del tema (opcional)
   var raf = null, lastTime = 0;
 
   function radiusOf(level) { return theme.levels[level].radius * scale; }
-  function randomDrop() { return Math.floor(Math.random() * (theme.maxDropLevel + 1)); }
+  function randomDrop() { return 0; }
 
   function makeFruit(level, x, y) {
     var r = radiusOf(level);
-    var body = Matter.Bodies.circle(x, y, r, {
+    var options = {
       label: 'fruit',
       restitution: 0.18,
       friction: 0.12,
       frictionStatic: 0.4,
       density: 0.0018,
       slop: 0.02
-    });
+    };
+    var outline = outlines[theme.levels[level].emoji];
+    var body = outline ? Matter.Bodies.fromVertices(x, y, outline.map(function (p) {
+      return { x: p.x * r * 1.82, y: p.y * r * 1.82 };
+    }), options, true) : Matter.Bodies.circle(x, y, r * 0.86, options);
     body.plugin.fruitLevel = level;
     body.plugin.born = performance.now();
     return body;
@@ -175,12 +180,14 @@ window.FruitFusion = (function () {
     var def = theme.levels[level];
     var r = radiusOf(level);
     var x = body.position.x, y = body.position.y;
-    drawNeonCircle(x, y, r, def.color, 0.16);
+    // Sprite silhouette replaces the generic circle; a subtle sprite halo remains.
+
     var img = (def.image && images[def.image] && images[def.image].complete && images[def.image].naturalWidth) ? images[def.image] : emojiSprites[def.emoji];
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(body.angle);
     if (img && img.complete && img.naturalWidth) {
+      ctx.shadowColor = def.color; ctx.shadowBlur = 12;
       ctx.drawImage(img, -r * 0.92, -r * 0.92, r * 1.84, r * 1.84);
     } else {
       ctx.font = (r * 1.25) + 'px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
@@ -252,7 +259,7 @@ window.FruitFusion = (function () {
     // pieza fantasma
     ctx.save();
     ctx.globalAlpha = canDrop ? 0.85 : 0.3;
-    drawNeonCircle(x, DROP_Y, r, def.color, 0.12);
+    // The aim preview uses the emoji silhouette, not a circle.
     ctx.font = (r * 1.25) + 'px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -260,7 +267,7 @@ window.FruitFusion = (function () {
     ctx.shadowBlur = 16;
     var sprite = emojiSprites[def.emoji];
     if (sprite && sprite.complete && sprite.naturalWidth) {
-      ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
+      ctx.shadowColor = def.color; ctx.shadowBlur = 12;
       ctx.drawImage(sprite, x - r * 0.92, DROP_Y - r * 0.92, r * 1.84, r * 1.84);
     } else {
       ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
@@ -318,10 +325,26 @@ window.FruitFusion = (function () {
     return chars.map(function (c) { return c.codePointAt(0).toString(16); }).join('-');
   }
 
+  function traceOutline(img, emoji) {
+    try {
+      var c = document.createElement('canvas'); c.width = c.height = 80;
+      var cx = c.getContext('2d', { willReadFrequently: true });
+      cx.drawImage(img, 0, 0, 80, 80);
+      var data = cx.getImageData(0, 0, 80, 80).data;
+      var points = [];
+      for (var y = 0; y < 80; y += 3) for (var x = 0; x < 80; x += 3) {
+        if (data[(y * 80 + x) * 4 + 3] > 80) points.push({ x: (x - 40) / 40, y: (y - 40) / 40 });
+      }
+      if (points.length >= 12) outlines[emoji] = Matter.Vertices.hull(points);
+    } catch (e) { /* Canvas tainted or unavailable: circle physics fallback. */ }
+  }
+
   function preloadImages() {
     theme.levels.forEach(function (l) {
       if (!l.emoji || emojiSprites[l.emoji]) return;
       var img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = function () { traceOutline(img, l.emoji); };
       img.src = 'https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/' + emojiFile(l.emoji) + '.svg';
       emojiSprites[l.emoji] = img;
     });
