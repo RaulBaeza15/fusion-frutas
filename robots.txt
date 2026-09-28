@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://raulbaeza15.github.io/fusion-frutas/sitemap.xml
