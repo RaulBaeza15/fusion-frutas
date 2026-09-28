@@ -53,9 +53,10 @@
     if (custom) area.value = parsed.join('\n');
     else {
       var samples = ['🐣🐤🐔🦅🐉', '🐛🐝🦋🦜🦚', '🐠🐟🐡🐬🐳', '🚲🛵🏍️🚗🚀'];
-      area.value = Array.from(samples[Math.floor(Math.random() * samples.length)]).join('\n');
-      // Some emoji sequences contain variation selectors: use grapheme segmentation instead.
-      if (typeof Intl.Segmenter === 'function') area.value = Array.from(new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(samples[Math.floor(Math.random() * samples.length)]), function (x) { return x.segment; }).join('\n');
+      var chosen = samples[Math.floor(Math.random() * samples.length)];
+      area.value = typeof Intl.Segmenter === 'function'
+        ? Array.from(new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(chosen), function (x) { return x.segment; }).join('\n')
+        : Array.from(chosen).filter(function (x) { return x !== '\ufe0f'; }).join('\n');
     }
     function translate() {
       document.querySelectorAll('[data-custom]').forEach(function (node) {
